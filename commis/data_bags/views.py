@@ -11,6 +11,7 @@ from commis.generic_views import CommisAPIView, api, CommisView
 from commis.data_bags.forms import DataBagForm, DataBagItemForm
 from commis.data_bags.models import DataBag, DataBagItem
 from commis.db import update
+from commis.utils import json
 
 class DataBagAPIView(CommisAPIView):
     model = DataBag
