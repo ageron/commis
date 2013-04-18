@@ -49,10 +49,13 @@ class DataBagAPIView(CommisAPIView):
     def item_update(self, request, bag_name, name):
         if not request.json:
             raise ChefAPIError(500, 'No data sent')
-        if request.json.get('id') != name:
+        data = request.json.get('raw_data')
+        if not isinstance(data, dict):
+            data = request.json
+        if not isinstance(request.json, dict) or request.json.get('id') != name:
             raise ChefAPIError(500, 'Name mismatch in data bag item')
         item = self.get_item_or_404(bag_name, name)
-        update(item, data=request.raw_post_data)
+        update(item, data=json.dumps(data, indent=4))
         return HttpResponse(item.data, status=200, content_type='application/json')
 
     @api('DELETE', admin=True)
