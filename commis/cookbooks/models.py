@@ -35,18 +35,21 @@ class CookbookManager(models.Manager):
                 cookbook.recipes.create(name=name, description=description)
         for type, label in CookbookFile.TYPES:
             for file_info in data.get(type, []):
+                new_content = False
                 try:
-                    cookbook_file = cookbook.files.get(type=type, name=file_info["name"], path=file_info["path"], specificity=file_info["specificity"], file__checksum=file_info['checksum'])
+                    cookbook_file = cookbook.files.get(type=type, path=file_info["path"])
                 except CookbookFile.DoesNotExist:
+                    cookbook_file = cookbook.files.create(type=type, path=file_info["path"])
+                    new_content = True
+                else:
+                    if cookbook_file.file.checksum != file_info["checksum"]:
+                        new_content = True
+                if new_content:
                     try:
-                        file = SandboxFile.objects.get(checksum=file_info['checksum'])
+                        cookbook_file.file = SandboxFile.objects.get(checksum=file_info['checksum'], uploaded=True)
                     except SandboxFile.DoesNotExist:
                         raise ChefAPIError(500, 'Checksum %s does not match any uploaded file', file_info['checksum'])
-                    if not file.uploaded:
-                        raise ChefAPIError(500, 'Checksum %s does not match any uploaded file', file_info['checksum'])
-                    cookbook_file = cookbook.files.create(type=type, file=file)
                 cookbook_file.name = file_info['name']
-                cookbook_file.path = file_info['path']
                 cookbook_file.specificity = file_info['specificity']
                 cookbook_file.save()
         cookbook.save()
