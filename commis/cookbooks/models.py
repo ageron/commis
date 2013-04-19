@@ -36,7 +36,7 @@ class CookbookManager(models.Manager):
         for type, label in CookbookFile.TYPES:
             for file_info in data.get(type, []):
                 try:
-                    cookbook_file = cookbook.files.get(type=type, file__checksum=file_info['checksum'])
+                    cookbook_file = cookbook.files.get(type=type, name=path=file_info["name"], path=file_info["path"], specificity=file_info["specificity"], file__checksum=file_info['checksum'])
                 except CookbookFile.DoesNotExist:
                     try:
                         file = SandboxFile.objects.get(checksum=file_info['checksum'])
